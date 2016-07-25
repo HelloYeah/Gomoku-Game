@@ -15,6 +15,8 @@
 		B44CE5D21D45B1210073C0D3 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B44CE5D01D45B1210073C0D3 /* LaunchScreen.storyboard */; };
 		B44CE5DD1D45B1210073C0D3 /* GomokuTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B44CE5DC1D45B1210073C0D3 /* GomokuTests.m */; };
 		B44CE5E81D45B1210073C0D3 /* GomokuUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = B44CE5E71D45B1210073C0D3 /* GomokuUITests.m */; };
+		B4DC26E11D45B3E200B5B9B1 /* CheckerboardView.m in Sources */ = {isa = PBXBuildFile; fileRef = B4DC26E01D45B3E200B5B9B1 /* CheckerboardView.m */; };
+		B4DC26E41D45B67A00B5B9B1 /* UIView+Frame.m in Sources */ = {isa = PBXBuildFile; fileRef = B4DC26E31D45B67A00B5B9B1 /* UIView+Frame.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -51,6 +53,10 @@
 		B44CE5E31D45B1210073C0D3 /* GomokuUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GomokuUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B44CE5E71D45B1210073C0D3 /* GomokuUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GomokuUITests.m; sourceTree = "<group>"; };
 		B44CE5E91D45B1210073C0D3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B4DC26DF1D45B3E200B5B9B1 /* CheckerboardView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CheckerboardView.h; sourceTree = "<group>"; };
+		B4DC26E01D45B3E200B5B9B1 /* CheckerboardView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CheckerboardView.m; sourceTree = "<group>"; };
+		B4DC26E21D45B67A00B5B9B1 /* UIView+Frame.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+Frame.h"; sourceTree = "<group>"; };
+		B4DC26E31D45B67A00B5B9B1 /* UIView+Frame.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+Frame.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -101,8 +107,11 @@
 		B44CE5C11D45B1210073C0D3 /* Gomoku */ = {
 			isa = PBXGroup;
 			children = (
+				B4DC26DE1D45B3CC00B5B9B1 /* Checkerboard */,
 				B44CE5C51D45B1210073C0D3 /* AppDelegate.h */,
 				B44CE5C61D45B1210073C0D3 /* AppDelegate.m */,
+				B4DC26E21D45B67A00B5B9B1 /* UIView+Frame.h */,
+				B4DC26E31D45B67A00B5B9B1 /* UIView+Frame.m */,
 				B44CE5C81D45B1210073C0D3 /* ViewController.h */,
 				B44CE5C91D45B1210073C0D3 /* ViewController.m */,
 				B44CE5CB1D45B1210073C0D3 /* Main.storyboard */,
@@ -138,6 +147,15 @@
 				B44CE5E91D45B1210073C0D3 /* Info.plist */,
 			);
 			path = GomokuUITests;
+			sourceTree = "<group>";
+		};
+		B4DC26DE1D45B3CC00B5B9B1 /* Checkerboard */ = {
+			isa = PBXGroup;
+			children = (
+				B4DC26DF1D45B3E200B5B9B1 /* CheckerboardView.h */,
+				B4DC26E01D45B3E200B5B9B1 /* CheckerboardView.m */,
+			);
+			path = Checkerboard;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -271,7 +289,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				B44CE5CA1D45B1210073C0D3 /* ViewController.m in Sources */,
+				B4DC26E11D45B3E200B5B9B1 /* CheckerboardView.m in Sources */,
 				B44CE5C71D45B1210073C0D3 /* AppDelegate.m in Sources */,
+				B4DC26E41D45B67A00B5B9B1 /* UIView+Frame.m in Sources */,
 				B44CE5C41D45B1210073C0D3 /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -496,6 +516,7 @@
 				B44CE5EE1D45B1210073C0D3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		B44CE5EF1D45B1210073C0D3 /* Build configuration list for PBXNativeTarget "GomokuTests" */ = {
 			isa = XCConfigurationList;
@@ -504,6 +525,7 @@
 				B44CE5F11D45B1210073C0D3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		B44CE5F21D45B1210073C0D3 /* Build configuration list for PBXNativeTarget "GomokuUITests" */ = {
 			isa = XCConfigurationList;
@@ -512,6 +534,7 @@
 				B44CE5F41D45B1210073C0D3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
