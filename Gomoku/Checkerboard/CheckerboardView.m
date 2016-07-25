@@ -27,6 +27,7 @@ typedef enum : NSUInteger {
 @property (nonatomic,assign) CGFloat isBlack;
 @property (nonatomic,assign) NSInteger maxLineCount; //一条线上的同颜色的棋子个数
 @property (nonatomic,strong) NSMutableDictionary * chessmanDict; //存放棋子字典的字典
+@property (nonatomic,strong) NSString * lastKey; //上一个棋子字典的key值
 @end
 
 @implementation CheckerboardView
@@ -110,6 +111,7 @@ typedef enum : NSUInteger {
         chessman.center = CGPointMake(kBoardSpace + col * self.gridWidth, kBoardSpace + row * self.gridWidth);
         [self addSubview:chessman];
         [self.chessmanDict setValue:@(self.isBlack) forKey:key];
+        self.lastKey = key;
         //检查游戏结果
         [self checkResult:col andRow:row andColor:self.isBlack];
         self.isBlack = !self.isBlack;
@@ -241,18 +243,6 @@ typedef enum : NSUInteger {
     return NO;
 }
 
-- (void)newGame{
-    
-    [self.chessmanDict removeAllObjects];
-    for (UIView * view in self.subviews) {
-        if ([view isKindOfClass:[UIImageView class]]) {
-            continue;
-        }
-        [view removeFromSuperview];
-    }
-    self.isBlack = NO;
-}
-
 - (void)alertResult{
 
     UIAlertController * alertComtroller = [UIAlertController alertControllerWithTitle:@"游戏结束" message:self.isBlack?@"白方胜":@"黑方胜" preferredStyle:UIAlertControllerStyleAlert];
@@ -273,5 +263,50 @@ typedef enum : NSUInteger {
         next = [next nextResponder];
     } while (next != nil);
     return nil;
+}
+
+#pragma mark - 功能方法
+- (void)newGame{
+    
+    [self.chessmanDict removeAllObjects];
+    for (UIView * view in self.subviews) {
+        if ([view isKindOfClass:[UIImageView class]]) {
+            continue;
+        }
+        [view removeFromSuperview];
+    }
+    self.isBlack = NO;
+}
+
+- (void)backOneStep:(UIButton *)sender{
+    
+    
+    if (self.lastKey == nil) {
+        sender.enabled = NO;
+        UIView * tip = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 160, 100)];
+        tip.backgroundColor = [UIColor colorWithWhite:1 alpha:0.8];
+        tip.layer.cornerRadius = 8.0f;
+        [self addSubview:tip];
+        tip.center = CGPointMake(self.width * 0.5, self.height * 0.5);
+        UILabel * label = [[UILabel alloc]init];
+        label.text = @"只能悔一步棋!!!";
+        [label sizeToFit];
+        label.center = CGPointMake(tip.width * 0.5, tip.height * 0.5);
+        [tip addSubview:label];
+        
+        
+        self.userInteractionEnabled = NO;
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            self.userInteractionEnabled = YES;
+            sender.enabled = YES;
+            [tip removeFromSuperview];
+            
+        });
+        return;
+    }
+    [self.chessmanDict removeObjectForKey:self.lastKey];
+    [self.subviews.lastObject removeFromSuperview];
+    self.isBlack = !self.isBlack;
+    self.lastKey = nil;
 }
 @end

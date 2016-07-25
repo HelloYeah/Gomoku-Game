@@ -10,4 +10,6 @@
 
 @interface CheckerboardView : UIView
 
+- (void)backOneStep:(UIButton *)sender;
+- (void)newGame;
 @end
