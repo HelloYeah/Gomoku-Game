@@ -11,7 +11,7 @@
 #import "UIView+Frame.h"
 
 #define ScreenW [UIScreen mainScreen].bounds.size.width
-static const NSInteger kGridCount = 9;
+static const NSInteger kGridCount = 15;
 static const CGFloat kChessmanSizeRatio = 0.8; //棋子宽高占格子宽高的百分比,大于0,小于1
 static const CGFloat kBoardSpace = 20;
 
@@ -25,9 +25,14 @@ typedef enum : NSUInteger {
 @interface CheckerboardView ()
 @property (nonatomic,assign) CGFloat gridWidth;
 @property (nonatomic,assign) CGFloat isBlack;
-@property (nonatomic,assign) NSInteger maxLineCount; //一条线上的同颜色的棋子个数
+//@property (nonatomic,assign) NSInteger maxLineCount; //一条线上的同颜色的棋子个数
+@property (nonatomic,strong) NSMutableArray * sameChessmanArray; //一条线上的同颜色的棋子个数
 @property (nonatomic,strong) NSMutableDictionary * chessmanDict; //存放棋子字典的字典
 @property (nonatomic,strong) NSString * lastKey; //上一个棋子字典的key值
+@property (nonatomic,assign) BOOL  isHighLevel;  //是否是高级棋盘
+@property (nonatomic,assign) NSInteger  gridCount;
+@property (nonatomic,assign) BOOL  isOver; //游戏是否结束
+
 @end
 
 @implementation CheckerboardView
@@ -63,30 +68,28 @@ typedef enum : NSUInteger {
     self.backgroundColor = [UIColor colorWithRed:200/255.0 green:160/255.0 blue:130/255.0 alpha:1];
     [self drawBackground:self.size];
     [self addGestureRecognizer:[[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(tapBoard:)]];
-    
 }
 
 #pragma mark - 绘制棋盘
 - (void)drawBackground:(CGSize)size{
     
-    self.gridWidth = (size.width - 2 * kBoardSpace) / kGridCount;
+    self.gridWidth = (size.width - 2 * kBoardSpace) / self.gridCount;
     
     //1.开启图像上下文
     UIGraphicsBeginImageContext(size);
     //2.获取上下文
     CGContextRef ctx = UIGraphicsGetCurrentContext();
     
-    [[UIColor blackColor]set];
     CGContextSetLineWidth(ctx, 0.8f);
     //3.1 画16条竖线
-    for (int i = 0; i <= kGridCount; i ++) {
+    for (int i = 0; i <= self.gridCount; i ++) {
         CGContextMoveToPoint(ctx, kBoardSpace + i * self.gridWidth , kBoardSpace);
-        CGContextAddLineToPoint(ctx, kBoardSpace + i * self.gridWidth , kBoardSpace + kGridCount * self.gridWidth);
+        CGContextAddLineToPoint(ctx, kBoardSpace + i * self.gridWidth , kBoardSpace + self.gridCount * self.gridWidth);
     }
     //3.1 画16条横线
-    for (int i = 0; i <= kGridCount; i ++) {
+    for (int i = 0; i <= self.gridCount; i ++) {
         CGContextMoveToPoint(ctx, kBoardSpace, kBoardSpace  + i * self.gridWidth );
-        CGContextAddLineToPoint(ctx, kBoardSpace + kGridCount * self.gridWidth , kBoardSpace + i * self.gridWidth);
+        CGContextAddLineToPoint(ctx, kBoardSpace + self.gridCount * self.gridWidth , kBoardSpace + i * self.gridWidth);
     }
     CGContextStrokePath(ctx);
     
@@ -110,26 +113,12 @@ typedef enum : NSUInteger {
         UIView * chessman = [self chessman];
         chessman.center = CGPointMake(kBoardSpace + col * self.gridWidth, kBoardSpace + row * self.gridWidth);
         [self addSubview:chessman];
-        [self.chessmanDict setValue:@(self.isBlack) forKey:key];
+        [self.chessmanDict setValue:chessman forKey:key];
         self.lastKey = key;
         //检查游戏结果
         [self checkResult:col andRow:row andColor:self.isBlack];
         self.isBlack = !self.isBlack;
     }
-}
-
-- (UIView *)chessman{
-    UIView * chessmanView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.gridWidth * kChessmanSizeRatio, self.gridWidth * kChessmanSizeRatio)];
-    chessmanView.layer.cornerRadius = chessmanView.width * 0.5;
-    chessmanView.backgroundColor = !self.isBlack ? [UIColor blackColor]:[UIColor whiteColor];
-    return chessmanView;
-}
-
-- (NSMutableDictionary *)chessmanDict{
-    if (!_chessmanDict) {
-        _chessmanDict = [NSMutableDictionary dictionary];
-    }
-    return _chessmanDict;
 }
 
 #pragma mark - 私有方法
@@ -145,112 +134,142 @@ typedef enum : NSUInteger {
  //判断是否大于等于五个同色相连
 - (BOOL)checkResult:(NSInteger)col andRow:(NSInteger)row andColor:(BOOL)isBlack andDirection:(GmkDirection)direction{
 
+    if (self.sameChessmanArray.count >= 5) {
+        return YES;
+    }
+    UIColor * currentChessmanColor = [self.chessmanDict[[NSString stringWithFormat:@"%ld-%ld",col,row]] backgroundColor];
+    [self.sameChessmanArray addObject:self.chessmanDict[self.lastKey]];
     switch (direction) {
         //水平方向检查结果
         case GmkHorizontal:{
             //向前遍历
             for (NSInteger i = col - 1; i > 0; i --) {
                 NSString * key = [NSString stringWithFormat:@"%ld-%ld",i,row];
-                if (![self.chessmanDict.allKeys containsObject:key] || [self.chessmanDict[key] boolValue] != isBlack) break;
-                self.maxLineCount ++;
+                if (![self.chessmanDict.allKeys containsObject:key] || [self.chessmanDict[key] backgroundColor] != currentChessmanColor) break;
+                [self.sameChessmanArray addObject:self.chessmanDict[key]];
             }
             //向后遍历
             for (NSInteger i = col + 1; i < kGridCount; i ++) {
                 NSString * key = [NSString stringWithFormat:@"%ld-%ld",i,row];
-                if (![self.chessmanDict.allKeys containsObject:key] || [self.chessmanDict[key] boolValue] != isBlack) break;
-                self.maxLineCount ++;
+                if (![self.chessmanDict.allKeys containsObject:key] || [self.chessmanDict[key] backgroundColor] != currentChessmanColor) break;
+                [self.sameChessmanArray addObject:self.chessmanDict[key]];
             }
-            if (self.maxLineCount >= 4) {
+            if (self.sameChessmanArray.count >= 5) {
                 [self alertResult];
-                self.maxLineCount = 0;
                 return YES;
             }
-            self.maxLineCount = 0;
-        
-            break;
+            [self.sameChessmanArray removeAllObjects];
+            
         }
+            break;
         case GmkVertical:{
             //向前遍历
             for (NSInteger i = row - 1; i > 0; i --) {
                 NSString * key = [NSString stringWithFormat:@"%ld-%ld",col,i];
-                if (![self.chessmanDict.allKeys containsObject:key] || [self.chessmanDict[key] boolValue] != isBlack) break;
-                self.maxLineCount ++;
+                if (![self.chessmanDict.allKeys containsObject:key] || [self.chessmanDict[key] backgroundColor] != currentChessmanColor) break;
+                [self.sameChessmanArray addObject:self.chessmanDict[key]];
             }
             //向后遍历
             for (NSInteger i = row + 1; i < kGridCount; i ++) {
                 NSString * key = [NSString stringWithFormat:@"%ld-%ld",col,i];
-                if (![self.chessmanDict.allKeys containsObject:key] || [self.chessmanDict[key] boolValue] != isBlack) break;
-                self.maxLineCount ++;
+                if (![self.chessmanDict.allKeys containsObject:key] || [self.chessmanDict[key] backgroundColor] != currentChessmanColor) break;
+                [self.sameChessmanArray addObject:self.chessmanDict[key]];
             }
-            if (self.maxLineCount >= 4) {
+            if (self.sameChessmanArray.count >= 5) {
                 [self alertResult];
-                self.maxLineCount = 0;
                 return YES;
             }
-            self.maxLineCount = 0;
-            break;
+            [self.sameChessmanArray removeAllObjects];
+            
         }
+            break;
         case GmkObliqueDown:{
+            
             //向前遍历
             NSInteger j = col - 1;
             for (NSInteger i = row - 1; i >= 0; i--,j--) {
                 NSString * key = [NSString stringWithFormat:@"%ld-%ld",j,i];
-                if (![self.chessmanDict.allKeys containsObject:key] || [self.chessmanDict[key] boolValue] != isBlack || j < 0) break;
-                self.maxLineCount ++;
+                if (![self.chessmanDict.allKeys containsObject:key] || [self.chessmanDict[key] backgroundColor] != currentChessmanColor || j < 0) break;
+                [self.sameChessmanArray addObject:self.chessmanDict[key]];
             }
             //向后遍历
             j = col + 1;
             for (NSInteger i = row + 1 ; i < kGridCount; i++,j++) {
                 NSString * key = [NSString stringWithFormat:@"%ld-%ld",j,i];
-                if (![self.chessmanDict.allKeys containsObject:key] || [self.chessmanDict[key] boolValue] != isBlack || j > kGridCount) break;
-                self.maxLineCount ++;
+                if (![self.chessmanDict.allKeys containsObject:key] || [self.chessmanDict[key] backgroundColor] != currentChessmanColor || j > kGridCount) break;
+                [self.sameChessmanArray addObject:self.chessmanDict[key]];
             }
-            if (self.maxLineCount >= 4) {
+            if (self.sameChessmanArray.count >= 5) {
                 [self alertResult];
-                self.maxLineCount = 0;
                 return YES;
             }
-            self.maxLineCount = 0;
+            [self.sameChessmanArray removeAllObjects];
             
-        break;
+        
         }
-            
+            break;
         case GmkObliqueUp:{
             //向前遍历
             NSInteger j = col + 1;
             for (NSInteger i = row - 1; i >= 0; i--,j++) {
                 NSString * key = [NSString stringWithFormat:@"%ld-%ld",j,i];
-                if (![self.chessmanDict.allKeys containsObject:key] || [self.chessmanDict[key] boolValue] != isBlack || j > kGridCount) break;
-                self.maxLineCount ++;
+                if (![self.chessmanDict.allKeys containsObject:key] || [self.chessmanDict[key] backgroundColor] != currentChessmanColor || j > kGridCount) break;
+                [self.sameChessmanArray addObject:self.chessmanDict[key]];
             }
             //向后遍历
             j = col - 1;
             for (NSInteger i = row + 1 ; i < kGridCount; i++,j--) {
                 NSString * key = [NSString stringWithFormat:@"%ld-%ld",j,i];
-                if (![self.chessmanDict.allKeys containsObject:key] || [self.chessmanDict[key] boolValue] != isBlack || j < 0) break;
-                self.maxLineCount ++;
+                if (![self.chessmanDict.allKeys containsObject:key] || [self.chessmanDict[key] backgroundColor] != currentChessmanColor || j < 0) break;
+                [self.sameChessmanArray addObject:self.chessmanDict[key]];
             }
-            if (self.maxLineCount >= 4) {
+            if (self.sameChessmanArray.count >= 5) {
                 [self alertResult];
-                self.maxLineCount = 0;
                 return YES;
             }
-            self.maxLineCount = 0;
+            [self.sameChessmanArray removeAllObjects];
             
-            break;
         }
+            break;
     }
     return NO;
 }
 
 - (void)alertResult{
 
-    UIAlertController * alertComtroller = [UIAlertController alertControllerWithTitle:@"游戏结束" message:self.isBlack?@"白方胜":@"黑方胜" preferredStyle:UIAlertControllerStyleAlert];
-    [[self getCurrentViewController] presentViewController:alertComtroller animated:YES completion:nil];
-    UIAlertAction * action = [UIAlertAction actionWithTitle:@"再来一盘" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        [self newGame];
-    }];
-    [alertComtroller addAction:action];
+    self.isOver = YES;
+    NSLog(@"self.sameChessmanArray == %ld",self.sameChessmanArray.count);
+    for (UIView * view in self.sameChessmanArray) {
+        NSString * key = [self.chessmanDict allKeysForObject:view].firstObject;
+        NSLog(@"%@",key);
+    }
+    
+    UIView * tip = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 160, 100)];
+    tip.backgroundColor = [UIColor whiteColor];
+    tip.alpha = 1;
+    tip.layer.cornerRadius = 8.0f;
+    [self addSubview:tip];
+    tip.center = CGPointMake(self.width * 0.5, self.height * 0.5);
+    UILabel * label = [[UILabel alloc]init];
+    label.text = self.isBlack?@"白方胜":@"黑方胜";
+    [label sizeToFit];
+    label.center = CGPointMake(tip.width * 0.5, tip.height * 0.5);
+    [tip addSubview:label];
+    
+    CAKeyframeAnimation * anim = [CAKeyframeAnimation animation];
+    anim.values = @[@(1),@(0),@(1)];
+    anim.keyPath = @"opacity";
+    anim.duration = 0.8f;
+    anim.repeatCount = CGFLOAT_MAX;
+    for (UIView * view in self.sameChessmanArray) {
+        [view.layer addAnimation:anim forKey:@"alpha"];
+    }
+    
+    self.userInteractionEnabled = NO;
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [tip removeFromSuperview];
+    });
+
 }
 
 //获取当前View的控制器对象
@@ -268,6 +287,9 @@ typedef enum : NSUInteger {
 #pragma mark - 功能方法
 - (void)newGame{
     
+    self.isOver = NO;
+    [self.sameChessmanArray removeAllObjects];
+    self.userInteractionEnabled = YES;
     [self.chessmanDict removeAllObjects];
     for (UIView * view in self.subviews) {
         if ([view isKindOfClass:[UIImageView class]]) {
@@ -278,8 +300,10 @@ typedef enum : NSUInteger {
     self.isBlack = NO;
 }
 
+//撤回至上一步棋
 - (void)backOneStep:(UIButton *)sender{
-    
+
+    if(self.isOver) return;
     
     if (self.lastKey == nil) {
         sender.enabled = NO;
@@ -294,7 +318,6 @@ typedef enum : NSUInteger {
         label.center = CGPointMake(tip.width * 0.5, tip.height * 0.5);
         [tip addSubview:label];
         
-        
         self.userInteractionEnabled = NO;
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             self.userInteractionEnabled = YES;
@@ -308,5 +331,43 @@ typedef enum : NSUInteger {
     [self.subviews.lastObject removeFromSuperview];
     self.isBlack = !self.isBlack;
     self.lastKey = nil;
+}
+
+//改变键盘级别
+- (void)changeBoardLevel{
+    [self newGame];
+    for (UIView * view in self.subviews) {
+        [view removeFromSuperview];
+    }
+    self.isHighLevel = !self.isHighLevel;
+    [self drawBackground:self.bounds.size];
+}
+
+#pragma mark - getter/setter 方法
+
+- (UIView *)chessman{
+    UIView * chessmanView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.gridWidth * kChessmanSizeRatio, self.gridWidth * kChessmanSizeRatio)];
+    chessmanView.layer.cornerRadius = chessmanView.width * 0.5;
+    chessmanView.backgroundColor = !self.isBlack ? [UIColor blackColor]:[UIColor whiteColor];
+    return chessmanView;
+}
+
+- (NSMutableDictionary *)chessmanDict{
+    if (!_chessmanDict) {
+        _chessmanDict = [NSMutableDictionary dictionary];
+    }
+    return _chessmanDict;
+}
+
+- (NSMutableArray *)sameChessmanArray{
+    if (!_sameChessmanArray) {
+        _sameChessmanArray = [NSMutableArray array];
+    }
+    return _sameChessmanArray;
+}
+
+- (NSInteger)gridCount{
+    
+    return self.isHighLevel ? kGridCount : (kGridCount - 4);
 }
 @end

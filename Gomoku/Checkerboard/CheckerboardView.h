@@ -12,4 +12,5 @@
 
 - (void)backOneStep:(UIButton *)sender;
 - (void)newGame;
+- (void)changeBoardLevel;
 @end
