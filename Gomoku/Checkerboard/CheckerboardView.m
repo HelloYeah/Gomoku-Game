@@ -288,6 +288,7 @@ typedef enum : NSUInteger {
 - (void)newGame{
     
     self.isOver = NO;
+    self.lastKey = nil;
     [self.sameChessmanArray removeAllObjects];
     self.userInteractionEnabled = YES;
     [self.chessmanDict removeAllObjects];
@@ -313,7 +314,8 @@ typedef enum : NSUInteger {
         [self addSubview:tip];
         tip.center = CGPointMake(self.width * 0.5, self.height * 0.5);
         UILabel * label = [[UILabel alloc]init];
-        label.text = @"只能悔一步棋!!!";
+        label.text = self.chessmanDict.count > 0 ? @"只能悔一步棋!!!" : @"请先落子!!!";
+        label.font = [UIFont systemFontOfSize:15];
         [label sizeToFit];
         label.center = CGPointMake(tip.width * 0.5, tip.height * 0.5);
         [tip addSubview:label];
@@ -335,10 +337,11 @@ typedef enum : NSUInteger {
 
 //改变键盘级别
 - (void)changeBoardLevel{
-    [self newGame];
+    
     for (UIView * view in self.subviews) {
         [view removeFromSuperview];
     }
+    [self newGame];
     self.isHighLevel = !self.isHighLevel;
     [self drawBackground:self.bounds.size];
 }
