@@ -10,8 +10,9 @@
 #import "CheckerboardView.h"
 #import "UIView+Frame.h"
 
-#define ScreenW [UIScreen mainScreen].bounds.size.width
-static const NSInteger kGridCount = 15;
+#define SCREEN_WIDTH [UIScreen mainScreen].bounds.size.width
+#define SCREEN_WIDTH_RATIO (SCREEN_WIDTH / 320)  //屏宽比例
+static const NSInteger kGridCount = 15;         //多少个格子
 static const CGFloat kChessmanSizeRatio = 0.8; //棋子宽高占格子宽高的百分比,大于0,小于1
 static const CGFloat kBoardSpace = 20;
 
@@ -25,7 +26,6 @@ typedef enum : NSUInteger {
 @interface CheckerboardView ()
 @property (nonatomic,assign) CGFloat gridWidth;
 @property (nonatomic,assign) CGFloat isBlack;
-//@property (nonatomic,assign) NSInteger maxLineCount; //一条线上的同颜色的棋子个数
 @property (nonatomic,strong) NSMutableArray * sameChessmanArray; //一条线上的同颜色的棋子个数
 @property (nonatomic,strong) NSMutableDictionary * chessmanDict; //存放棋子字典的字典
 @property (nonatomic,strong) NSString * lastKey; //上一个棋子字典的key值
@@ -244,8 +244,9 @@ typedef enum : NSUInteger {
         NSLog(@"%@",key);
     }
     
-    UIView * tip = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 160, 100)];
-    tip.backgroundColor = [UIColor whiteColor];
+    CGFloat width = SCREEN_WIDTH * 0.4 * SCREEN_WIDTH_RATIO;
+    UIView * tip = [[UIView alloc]initWithFrame:CGRectMake(0, 0, width, 0.6 * width)];
+    tip.backgroundColor = [UIColor colorWithWhite:1 alpha:0.8];
     tip.alpha = 1;
     tip.layer.cornerRadius = 8.0f;
     [self addSubview:tip];
@@ -308,7 +309,8 @@ typedef enum : NSUInteger {
     
     if (self.lastKey == nil) {
         sender.enabled = NO;
-        UIView * tip = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 160, 100)];
+        CGFloat width = SCREEN_WIDTH * 0.4 * SCREEN_WIDTH_RATIO;
+        UIView * tip = [[UIView alloc]initWithFrame:CGRectMake(0, 0, width, 0.6 * width)];
         tip.backgroundColor = [UIColor colorWithWhite:1 alpha:0.8];
         tip.layer.cornerRadius = 8.0f;
         [self addSubview:tip];
