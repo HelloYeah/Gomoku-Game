@@ -7,9 +7,6 @@
 
 ![1.gif](http://upload-images.jianshu.io/upload_images/1338042-f841f64f67c52352.gif?imageMogr2/auto-orient/strip) 
 
-- 初高级棋盘切换效果
-
-![2.gif](http://upload-images.jianshu.io/upload_images/1338042-09596bfa61263b56.gif?imageMogr2/auto-orient/strip) 
 
 ###实现思路及主要代码详解
 
