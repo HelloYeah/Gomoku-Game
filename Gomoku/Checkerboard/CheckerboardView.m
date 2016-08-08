@@ -235,6 +235,7 @@ typedef enum : NSUInteger {
     return NO;
 }
 
+//游戏结果,提示效果
 - (void)alertResult{
 
     self.isOver = YES;
@@ -271,18 +272,6 @@ typedef enum : NSUInteger {
         [tip removeFromSuperview];
     });
 
-}
-
-//获取当前View的控制器对象
--(UIViewController *)getCurrentViewController{
-    UIResponder *next = [self nextResponder];
-    do {
-        if ([next isKindOfClass:[UIViewController class]]) {
-            return (UIViewController *)next;
-        }
-        next = [next nextResponder];
-    } while (next != nil);
-    return nil;
 }
 
 #pragma mark - 功能方法
